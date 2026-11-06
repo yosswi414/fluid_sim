@@ -1,4 +1,7 @@
-#include <iostream>
+#pragma once
+
+#include <iostream> // IWYU pragma: keep
+#include <cuda_runtime.h>
 
 const auto THREADS_PER_BLOCK = 256;
 
@@ -6,7 +9,7 @@ const auto THREADS_PER_BLOCK = 256;
     do { \
         cudaError_t err = call; \
         if (err != cudaSuccess) { \
-            std::cerr << "CUDA Error at " << __FILE__ << ":" << __LINE__ << " -> " << cudaGetErrorString(err) << std::endl; \
+            std::cerr << "CUDA Error at " << __FILE__ << ":" << __LINE__ << " -> " << cudaGetErrorString(err) << '\n'; \
             std::exit(EXIT_FAILURE); \
         } \
     } while(0)
