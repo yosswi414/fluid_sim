@@ -1,8 +1,17 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <cuda_runtime.h>
-#include "common.hpp"
+
+#define CUDA_CHECK(call) \
+    do { \
+        cudaError_t err = call; \
+        if (err != cudaSuccess) { \
+            std::cerr << "CUDA Error at " << __FILE__ << ":" << __LINE__ << " -> " << cudaGetErrorString(err) << '\n'; \
+            std::exit(EXIT_FAILURE); \
+        } \
+    } while(0)
 
 struct CudaDeleter {
     void operator()(void* const ptr) const {
