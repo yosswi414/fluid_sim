@@ -6,12 +6,13 @@
 #include "kernel.hpp"
 #include "utility.hpp"
 
-int main(){
-    const int num_particles = 10000;
+int main() {
     const real_t dt = 1e-2;
-    const int num_steps = 100;
+    const std::size_t p_width = 80;
+    const std::size_t p_height = 500;
+    const std::size_t num_particles = p_width * p_height;
     const std::size_t size = num_particles * sizeof(real_t);
-    const std::size_t len_side = 100;
+    const real_t p_radius = 0.2;
 
     std::vector<real_t> px(num_particles), py(px), vx(px), vy(px);
 
@@ -28,12 +29,12 @@ int main(){
                 py[idx] = 0.5 + static_cast<real_t>(i) * p_radius;
                 vx[idx] = vy[idx] = 0;
             }
-    }
+        }
 
-    CUDA_CHECK(cudaMemcpy(px_d.get(), px.data(), size, cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(py_d.get(), py.data(), size, cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(vx_d.get(), vx.data(), size, cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(vy_d.get(), vy.data(), size, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(px_d.get(), px.data(), size, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(py_d.get(), py.data(), size, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(vx_d.get(), vx.data(), size, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(vy_d.get(), vy.data(), size, cudaMemcpyHostToDevice));
     };
 
     init_particles();
@@ -74,6 +75,8 @@ int main(){
                     break;
             }
         }
+
+        launchUpdateParticles(px_d.get(), py_d.get(), vx_d.get(), vy_d.get(), num_particles, p_radius, dt);
         CUDA_CHECK(cudaGetLastError());
         CUDA_CHECK(cudaDeviceSynchronize());
         CUDA_CHECK(cudaMemcpy(px.data(), px_d.get(), size, cudaMemcpyDeviceToHost));
@@ -108,6 +111,7 @@ int main(){
         }
 
         window.display();
+        std::cout << "[main] p_0 = (" << px[0] << ", " << py[0] << ")\n" << std::flush;
     }
 
     return 0;
